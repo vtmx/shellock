@@ -7,7 +7,7 @@ A basic clone of [sherlock](https://github.com/sherlock-project/sherlock) made i
 ```bash
 ./shellock johndoe
 
-[*] Checking username johndoe on:
+Checking username johndoe on:
 
 [+] 1337x: https://www.1337x.to/user/johndoe/
 [-] 2Dimensions: https://2Dimensions.com/a/johndoe
