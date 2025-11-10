@@ -2,10 +2,6 @@
 
 # Clone of sherlock in bash
 
-# References
-# https://github.com/sherlock-project/sherlock
-# https://www.youtube.com/watch?v=KdZvxxLsN3E
-
 if [[ ! "$*" ]]; then
   echo "usage: shellock [user]" >&2
   exit 0
@@ -14,11 +10,11 @@ fi
 user="$*"
 sherlock_url='https://raw.githubusercontent.com/sherlock-project/sherlock/842ae1f754c7af46f06dd31ae168c1d9793da768/sherlock_project/resources/data.json'
 sherlock_data=$(curl -s "$sherlock_url")
+# sherlock_data=$(<data.json) # Test local
 
 # Echo header
 echo_header() {
-  echo; echo_checkbox status
-  echo -en "Checking username $(tput setaf 4)$user$(tput sgr0) on:\n\n"
+  echo -en "\n$(echo_checkbox status) Checking username $(tput setaf 4)$user$(tput sgr0) on:\n\n"
 }
 
 # Echo header
@@ -38,7 +34,7 @@ echo_checkbox() {
     *) echo -n ' ' ;;
   esac
   tput sgr0
-  echo -n '] '
+  echo -n ']'
 }
 
 # Header
