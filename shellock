@@ -10,56 +10,60 @@ fi
 
 user="$*"
 sherlock_url='https://raw.githubusercontent.com/sherlock-project/sherlock/842ae1f754c7af46f06dd31ae168c1d9793da768/sherlock_project/resources/data.json'
-sherlock_data=$(curl -s "$sherlock_url")
+timeout=10
+curl_opts=(-s --max-time $timeout --connect-timeout $timeout)
+sherlock_data=$(curl "${curl_opts[@]}" "$sherlock_url")
 # sherlock_data=$(<data.json) # Test local
 
-# Echo header
-echo_header() {
+# Print header
+print_header() {
   echo -e "\nChecking username $(tput setaf 4)$user$(tput sgr0) on:\n"
 }
 
-# Echo header
-echo_footer() {
+# Print result
+print_result() {
   echo -e "\nAccounts searched: $(tput setaf 4)${1}$(tput sgr0)"
   echo "Accounts founds: $(tput setaf 2)${2}$(tput sgr0)"
   echo "Accounts not founds: $(tput setaf 1)${3}$(tput sgr0)"
 }
 
-# Echo checkbox status
-echo_checkbox() {
-  echo -n '['
+# Print status
+print_status() {
+  local status=$1
+  local site_name=$2
+  local url=$3
+
   case $1 in
-    valid) tput setaf 2; echo -n '+' ;;
-    invalid) tput setaf 1; echo -n '-' ;;
-    status) tput setaf 3; echo -n '*' ;;
-    *) echo -n ' ' ;;
+    found)
+      echo "[$(tput setaf 2)+$(tput sgr0)] $(tput setaf 2)$site_name:$(tput sgr0) $url" ;;
+
+    not_found)
+      echo "[$(tput setaf 1)-$(tput sgr0)] $(tput setaf 1)$site_name:$(tput sgr0) $url" ;;
   esac
-  tput sgr0
-  echo -n ']'
 }
 
 # Header
-echo_header
+print_header
 
 # Body
 readarray -t sites < <(awk -F'"' '/": \{/ {print $2}' <<< "$sherlock_data")
 readarray -t urls < <(awk -F'"' '/"url":/ {print $4}' <<< "$sherlock_data")
 
-for site in "${sites[@]}"; do
-  user_site=${urls[site_count]//\{\}/$user}
-  http_code=$(curl -Isq "$user_site" | awk '/^HTTP/ {print $2}')
+for site_name in "${sites[@]}"; do
+  url=${urls[site_count]//\{\}/$user}
+  http_code=$(curl -Isq "$url" | awk '/^HTTP/ {print $2}')
 
   if [[ $http_code -eq 200 ]]; then
-    echo -n "$(echo_checkbox valid) $(tput setaf 2)${sites[site_count]}: $(tput sgr0)"
+    status=found
     ((site_valid_count++))
   else
-    echo -n "$(echo_checkbox invalid) $(tput setaf 1)${sites[site_count]}: $(tput sgr0)"
+    status=not_found
     ((site_invalid_count++))
   fi
 
-  echo "$user_site"
+  print_status $status "$site_name" "$url"
   ((site_count++))
 done
 
-# Footer
-echo_footer $site_count $site_valid_count $site_invalid_count
+# Result
+print_result $site_count $site_valid_count $site_invalid_count
