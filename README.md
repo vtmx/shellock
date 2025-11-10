@@ -1,6 +1,6 @@
 # Shellock
 
-A basico clone of [sherlock](https://github.com/sherlock-project/sherlock) made in bash.
+A basic clone of [sherlock](https://github.com/sherlock-project/sherlock) made in bash.
 
 ## Usage
 
