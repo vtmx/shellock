@@ -19,7 +19,7 @@ echo_header() {
 
 # Echo header
 echo_footer() {
-  echo -e "\nAccounts searchs: $(tput setaf 4)${1}$(tput sgr0)"
+  echo -e "\nAccounts searched: $(tput setaf 4)${1}$(tput sgr0)"
   echo "Accounts founds: $(tput setaf 2)${2}$(tput sgr0)"
   echo "Accounts not founds: $(tput setaf 1)${3}$(tput sgr0)"
 }
