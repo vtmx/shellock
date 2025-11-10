@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+# Clone of sherlock in bash
+
+# References
+# https://github.com/sherlock-project/sherlock
+# https://www.youtube.com/watch?v=KdZvxxLsN3E
+
+if [[ ! "$*" ]]; then
+  echo "usage: shellock [user]" >&2
+  exit 0
+fi
+
+user="$*"
+sherlock_url='https://raw.githubusercontent.com/sherlock-project/sherlock/842ae1f754c7af46f06dd31ae168c1d9793da768/sherlock_project/resources/data.json'
+sherlock_data=$(curl -s "$sherlock_url")
+
+# Echo header
+echo_header() {
+  echo; echo_checkbox status
+  echo -en "Checking username $(tput setaf 4)$user$(tput sgr0) on:\n\n"
+}
+
+# Echo header
+echo_footer() {
+  echo -e "\nAccounts searchs: $(tput setaf 4)${1}$(tput sgr0)"
+  echo "Accounts founds: $(tput setaf 2)${2}$(tput sgr0)"
+  echo "Accounts not founds: $(tput setaf 1)${3}$(tput sgr0)"
+}
+
+# Echo checkbox status
+echo_checkbox() {
+  echo -n '['
+  case $1 in
+    valid) tput setaf 2; echo -n '+' ;;
+    invalid) tput setaf 1; echo -n '-' ;;
+    status) tput setaf 3; echo -n '*' ;;
+    *) echo -n ' ' ;;
+  esac
+  tput sgr0
+  echo -n '] '
+}
+
+# Header
+echo_header
+
+# Body
+readarray -t sites < <(awk -F'"' '/": \{/ {print $2}' <<< "$sherlock_data")
+readarray -t urls < <(awk -F'"' '/"url":/ {print $4}' <<< "$sherlock_data")
+
+for site in "${sites[@]}"; do
+  user_site=${urls[site_count]//\{\}/$user}
+  http_code=$(curl -Isq "$user_site" | awk '/^HTTP/ {print $2}')
+
+  if [[ $http_code -eq 200 ]]; then
+    echo -n "$(echo_checkbox valid) $(tput setaf 2)${sites[site_count]}: $(tput sgr0)"
+    ((site_valid_count++))
+  else
+    echo -n "$(echo_checkbox invalid) $(tput setaf 1)${sites[site_count]}: $(tput sgr0)"
+    ((site_invalid_count++))
+  fi
+
+  echo "$user_site"
+  ((site_count++))
+done
+
+# Footer
+echo_footer $site_count $site_valid_count $site_invalid_count
